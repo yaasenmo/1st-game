@@ -22,6 +22,7 @@ import {
   floorTop,
   stairX,
 } from '../config.js';
+import { isMobileLayout, pad, setChrome } from '../mobile.js';
 import { FONT, addButton } from '../ui.js';
 
 export class GameScene extends Phaser.Scene {
@@ -30,6 +31,8 @@ export class GameScene extends Phaser.Scene {
   }
 
   create() {
+    setChrome('GameScene');
+    this.mobile = isMobileLayout();
     this.floor = 3;
     this.facing = 1;
     this.climbing = false;
@@ -140,14 +143,16 @@ export class GameScene extends Phaser.Scene {
       onComplete: () => this.intro.destroy(),
     });
 
-    this.keys = this.input.keyboard.addKeys({
-      left: Phaser.Input.Keyboard.KeyCodes.A,
-      right: Phaser.Input.Keyboard.KeyCodes.D,
-      left2: Phaser.Input.Keyboard.KeyCodes.LEFT,
-      right2: Phaser.Input.Keyboard.KeyCodes.RIGHT,
-      up: Phaser.Input.Keyboard.KeyCodes.W,
-      up2: Phaser.Input.Keyboard.KeyCodes.UP,
-    });
+    this.keys = this.input.keyboard
+      ? this.input.keyboard.addKeys({
+          left: Phaser.Input.Keyboard.KeyCodes.A,
+          right: Phaser.Input.Keyboard.KeyCodes.D,
+          left2: Phaser.Input.Keyboard.KeyCodes.LEFT,
+          right2: Phaser.Input.Keyboard.KeyCodes.RIGHT,
+          up: Phaser.Input.Keyboard.KeyCodes.W,
+          up2: Phaser.Input.Keyboard.KeyCodes.UP,
+        })
+      : null;
 
     this.sound.stopByKey('wakeup');
     this.ambient = this.sound.add('ambient', { loop: true, volume: 0.2 });
@@ -236,39 +241,46 @@ export class GameScene extends Phaser.Scene {
       .setDepth(depth);
 
     this.hint = this.add
-      .text(VIEW_W / 2, VIEW_H - 22, 'A / D  MOVE      W  CLIMB', {
+      .text(VIEW_W / 2, this.mobile ? VIEW_H - 16 : VIEW_H - 22, this.idleHint(), {
         fontFamily: FONT,
-        fontSize: '16px',
+        fontSize: this.mobile ? '18px' : '16px',
         color: '#d9ccc4',
+        align: 'center',
       })
-      .setOrigin(0.5)
+      .setOrigin(0.5, this.mobile ? 1 : 0.5)
       .setScrollFactor(0)
       .setDepth(depth);
 
-    addButton(this, 112, VIEW_H - 22, 'Restart', () => this.scene.restart(), {
-      width: 190,
-      height: 34,
-      fontSize: 14,
-      depth,
-      scroll: 0,
-    });
-    addButton(
-      this,
-      VIEW_W - 86,
-      VIEW_H - 22,
-      'Quit',
-      () => {
-        this.ending = true;
-        this.scene.start('QuitScene');
-      },
-      {
-        width: 136,
+    if (!this.mobile) {
+      addButton(this, 112, VIEW_H - 22, 'Restart', () => this.scene.restart(), {
+        width: 190,
         height: 34,
-        fontSize: 15,
+        fontSize: 14,
         depth,
         scroll: 0,
-      },
-    );
+      });
+      addButton(
+        this,
+        VIEW_W - 86,
+        VIEW_H - 22,
+        'Quit',
+        () => {
+          this.ending = true;
+          this.scene.start('QuitScene');
+        },
+        {
+          width: 136,
+          height: 34,
+          fontSize: 15,
+          depth,
+          scroll: 0,
+        },
+      );
+    }
+  }
+
+  idleHint() {
+    return this.mobile ? 'PUSH LEFT OR RIGHT\nHOLD CLIMB AT THE STAIRS' : 'A / D  MOVE      W  CLIMB';
   }
 
   update(_time, delta) {
@@ -305,9 +317,10 @@ export class GameScene extends Phaser.Scene {
   }
 
   updatePlayer(dt) {
-    const left = this.keys.left.isDown || this.keys.left2.isDown;
-    const right = this.keys.right.isDown || this.keys.right2.isDown;
-    const climb = this.keys.up.isDown || this.keys.up2.isDown;
+    const keys = this.keys;
+    const left = !!(keys?.left.isDown || keys?.left2.isDown || pad.left);
+    const right = !!(keys?.right.isDown || keys?.right2.isDown || pad.right);
+    const climb = !!(keys?.up.isDown || keys?.up2.isDown || pad.climb);
     let dir = 0;
     if (this.awake && !this.climbing) {
       if (left && !right) dir = -1;
@@ -551,9 +564,9 @@ export class GameScene extends Phaser.Scene {
     const nearStairs = sx != null && Math.abs(this.player.x - sx) <= STAIR_REACH + 20;
     const nearDoor = this.floor === 7 && Math.abs(this.player.x - DOOR_X) < 80;
     if (nearDoor && !this.hasKey) this.hint.setText('THE ROOFTOP DOOR IS LOCKED');
-    else if (nearStairs) this.hint.setText('HOLD W TO CLIMB');
+    else if (nearStairs) this.hint.setText(this.mobile ? 'HOLD CLIMB' : 'HOLD W TO CLIMB');
     else if (this.floor === 7 && !this.hasKey) this.hint.setText('THE ROOF KEY IS IN THE OPEN ROOM');
-    else this.hint.setText('A / D  MOVE      W  CLIMB');
+    else this.hint.setText(this.idleHint());
   }
 
   syncShadows() {

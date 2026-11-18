@@ -2,7 +2,8 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
     <title>The Seventh Floor</title>
     <style>
       @font-face {
@@ -21,8 +22,117 @@
         overflow: hidden;
       }
 
+      html {
+        height: 100dvh;
+      }
+
       body {
         font-family: "Special Elite", Consolas, monospace;
+        touch-action: manipulation;
+      }
+
+      body.is-mobile {
+        display: flex;
+        flex-direction: column;
+        height: 100dvh;
+        touch-action: none;
+        user-select: none;
+        -webkit-user-select: none;
+      }
+
+      body.is-mobile #game {
+        flex: 1 1 auto;
+        height: auto;
+        min-height: 0;
+      }
+
+      #mobile-pad {
+        flex: 0 0 auto;
+        box-sizing: border-box;
+        min-height: 168px;
+        padding: 10px 12px calc(12px + env(safe-area-inset-bottom));
+        background: #07060a;
+        border-top: 2px solid #3a2428;
+      }
+
+      #mobile-pad [data-panel] {
+        display: none;
+      }
+
+      #mobile-pad[data-mode="menu"] [data-panel="menu"],
+      #mobile-pad[data-mode="over"] [data-panel="over"],
+      #mobile-pad[data-mode="win"] [data-panel="win"],
+      #mobile-pad[data-mode="quit"] [data-panel="quit"] {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+
+      #mobile-pad[data-mode="play"] [data-panel="play"] {
+        display: block;
+      }
+
+      #mobile-pad .move-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1.15fr;
+        gap: 8px;
+      }
+
+      #mobile-pad .sys-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-top: 8px;
+      }
+
+      #mobile-pad button {
+        appearance: none;
+        height: 72px;
+        border: 2px solid #8d2c34;
+        border-radius: 10px;
+        background: #14080b;
+        color: #f4efe6;
+        font-family: inherit;
+        font-size: 20px;
+        letter-spacing: 0.08em;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2px;
+        touch-action: none;
+      }
+
+      #mobile-pad .move-row button {
+        height: 88px;
+      }
+
+      #mobile-pad .sys-row button {
+        height: 46px;
+        font-size: 14px;
+      }
+
+      #mobile-pad button.primary {
+        background: #3a1218;
+        border-color: #d4545c;
+      }
+
+      #mobile-pad button .arrow {
+        font-size: 28px;
+        line-height: 1;
+      }
+
+      #mobile-pad button .cap {
+        font-size: 12px;
+        letter-spacing: 0.16em;
+        color: #d9ccc4;
+      }
+
+      #mobile-pad button.held {
+        background: #6a242c;
+        border-color: #ffb4b4;
+        color: #fff4f4;
+        transform: translateY(4px);
       }
     </style>
   </head>

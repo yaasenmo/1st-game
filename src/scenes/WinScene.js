@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { VIEW_H, VIEW_W } from '../config.js';
+import { isMobileLayout, setChrome } from '../mobile.js';
 import { addButton, FONT } from '../ui.js';
 
 export class WinScene extends Phaser.Scene {
@@ -8,6 +9,8 @@ export class WinScene extends Phaser.Scene {
   }
 
   create() {
+    setChrome('WinScene');
+    const mobile = isMobileLayout();
     this.sound.stopByKey('ambient');
     this.sound.stopByKey('heartbeat');
     this.sound.stopByKey('creature');
@@ -45,13 +48,15 @@ export class WinScene extends Phaser.Scene {
       .setOrigin(0.5)
       .setShadow(0, 2, '#000000', 4, true, true);
 
-    addButton(this, VIEW_W / 2 - 170, 470, 'Restart', () => this.scene.start('GameScene'), {
-      width: 220,
-      primary: true,
-    });
-    addButton(this, VIEW_W / 2 + 170, 470, 'Quit', () => this.scene.start('QuitScene'), {
-      width: 220,
-    });
+    if (!mobile) {
+      addButton(this, VIEW_W / 2 - 170, 470, 'Restart', () => this.scene.start('GameScene'), {
+        width: 220,
+        primary: true,
+      });
+      addButton(this, VIEW_W / 2 + 170, 470, 'Quit', () => this.scene.start('QuitScene'), {
+        width: 220,
+      });
+    }
   }
 
   update() {

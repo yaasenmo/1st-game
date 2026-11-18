@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { VIEW_H, VIEW_W } from './config.js';
+import { attachMobile, bindGame } from './mobile.js';
 import { BootScene } from './scenes/BootScene.js';
 import { MenuScene } from './scenes/MenuScene.js';
 import { GameScene } from './scenes/GameScene.js';
@@ -31,7 +32,8 @@ async function start() {
       // Consolas is the fallback if the font file is missing.
     }
   }
-  new Phaser.Game(config);
+  attachMobile();
+  bindGame(new Phaser.Game(config));
 }
 
 start();

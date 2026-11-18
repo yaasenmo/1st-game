@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { VIEW_H, VIEW_W } from '../config.js';
+import { isMobileLayout, setChrome } from '../mobile.js';
 import { addButton, FONT } from '../ui.js';
 
 const REASONS = {
@@ -13,6 +14,8 @@ export class GameOverScene extends Phaser.Scene {
   }
 
   create() {
+    setChrome('GameOverScene');
+    const mobile = isMobileLayout();
     this.sound.stopByKey('ambient');
     this.sound.stopByKey('heartbeat');
     this.sound.stopByKey('creature');
@@ -40,13 +43,23 @@ export class GameOverScene extends Phaser.Scene {
       })
       .setOrigin(0.5);
 
-    addButton(this, VIEW_W / 2, 400, 'Restart', () => this.scene.start('GameScene'), { primary: true });
-    addButton(this, VIEW_W / 2, 470, 'Quit', () => this.scene.start('QuitScene'));
+    if (!mobile) {
+      addButton(this, VIEW_W / 2, 400, 'Restart', () => this.scene.start('GameScene'), { primary: true });
+      addButton(this, VIEW_W / 2, 470, 'Quit', () => this.scene.start('QuitScene'));
+    } else {
+      this.add
+        .text(VIEW_W / 2, 400, 'Push RESTART or QUIT below.', {
+          fontFamily: FONT,
+          fontSize: '20px',
+          color: '#9a8884',
+        })
+        .setOrigin(0.5);
+    }
 
-    this.enter = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER);
+    this.enter = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER) ?? null;
   }
 
   update() {
-    if (Phaser.Input.Keyboard.JustDown(this.enter)) this.scene.start('GameScene');
+    if (this.enter && Phaser.Input.Keyboard.JustDown(this.enter)) this.scene.start('GameScene');
   }
 }
